@@ -78,6 +78,28 @@ Security Notes
 - Gmail OAuth credentials in `backend/.env` must remain secret.
 - If secrets are exposed, rotate or revoke them immediately in Google Cloud.
 
+CI/CD Pipeline
+--------------
+
+A GitHub Actions CI/CD workflow is defined in `.github/workflows/ci-cd.yml`.
+
+This workflow:
+
+- Installs backend dependencies
+- Starts a MongoDB service
+- Runs backend tests if a `test` script exists
+- Deploys on successful push to `main` using SSH
+
+To use deployment, configure these repository secrets:
+
+- `DEPLOY_HOST`
+- `DEPLOY_USER`
+- `DEPLOY_KEY`
+- `DEPLOY_PATH`
+- `DEPLOY_PORT` (optional, defaults to `22`)
+
+If you do not need SSH deployment, you can keep the workflow as a CI-only pipeline by removing the `deploy` job.
+
 More Information
 ----------------
 
