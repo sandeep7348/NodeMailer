@@ -1,0 +1,29 @@
+_id
+username
+email
+password
+verified
+createdAt
+updatedAt
+
+
+chat ka ek alag model create hoga
+_id
+user
+title
+createdAt
+updatedAt
+
+
+message different collection hoga
+_id 
+chat
+content
+role : user, ai
+
+
+Data modelling hai
+data ko database ko kis format me save karenge and kaun kaun se collection
+honge or kaise ek dusre se related honge
+
+

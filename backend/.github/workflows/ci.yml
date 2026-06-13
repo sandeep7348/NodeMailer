@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend-ci:
+    name: Backend CI
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:6.0
+        ports: ['27017:27017']
+        options: >-
+          --health-cmd "mongosh --eval \"db.runCommand({ ping: 1 })\" || exit 1"
+          --health-interval=10s --health-timeout=5s --health-retries=5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm ci
+
+      - name: Start backend server and wait for health
+        env:
+          MONGO_URI: mongodb://localhost:27017/perplexitydb
+          PORT: 4000
+        run: |
+          cd backend
+          # start server in background and log output
+          node index.js > server.log 2>&1 &
+          echo "Server PID: $!"
+
+          # wait for /health to respond (timeout ~30s)
+          for i in {1..30}; do
+            if curl -sSf http://localhost:4000/health >/dev/null; then
+              echo "Server is up"; break
+            fi
+            echo "Waiting for server... ($i)"
+            sleep 1
+          done
+          curl -sSf http://localhost:4000/health
+
+      - name: Run tests if available
+        run: |
+          cd backend
+          if npm run | grep -q "test"; then
+            npm test
+          else
+            echo "No test script defined, skipping tests."
+          fi
